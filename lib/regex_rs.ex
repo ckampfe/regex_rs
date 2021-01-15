@@ -9,6 +9,9 @@ defmodule RegexRs do
 
   ## Examples
 
+      iex> {:ok, _reference} = RegexRs.compile(~r/\d+/); nil
+      nil
+
       iex> {:ok, _reference} = RegexRs.compile("\\d+"); nil
       nil
 
@@ -16,7 +19,9 @@ defmodule RegexRs do
       nil
 
   """
-  def compile(_string), do: error()
+  def compile(re = %Regex{}), do: compile_internal(Regex.source(re))
+  def compile(string) when is_binary(string), do: compile_internal(string)
+  defp compile_internal(_string), do: error()
 
   @doc ~S"""
   Runs the regular expression against the given string until the first match. It

@@ -5,6 +5,7 @@ defmodule RegexRsTest do
   test "compile/2" do
     assert {:ok, _re} = RegexRs.compile("\\d+")
     assert {:error, _e} = RegexRs.compile("\\U\\P")
+    assert {:ok, _} = RegexRs.compile(~r/\d+/)
   end
 
   test "run/2" do

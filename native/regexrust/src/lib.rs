@@ -34,7 +34,7 @@ rustler::init!(
     load = on_load
 );
 
-#[rustler::nif]
+#[rustler::nif(name = "compile_internal")]
 fn compile(s: &str) -> Result<(rustler::Atom, CompiledRegex), Error> {
     let regex = regex::Regex::new(s);
     match regex {
