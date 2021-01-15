@@ -91,12 +91,12 @@ fn source(re: CompiledRegex) -> String {
 }
 
 #[rustler::nif]
-fn replace<'a>(re: CompiledRegex, s: &'a str, replacement: &str) -> EncodableCow<'a> {
+fn replace<'a>(re: CompiledRegex, s: &'a str, replacement: &str) -> EncodableCow<'a, str> {
     re.regex.replace(s, replacement).into()
 }
 
 #[rustler::nif]
-fn replace_all<'a>(re: CompiledRegex, s: &'a str, replacement: &str) -> EncodableCow<'a> {
+fn replace_all<'a>(re: CompiledRegex, s: &'a str, replacement: &str) -> EncodableCow<'a, str> {
     re.regex.replace_all(s, replacement).into()
 }
 
@@ -133,15 +133,15 @@ where
     }
 }
 
-struct EncodableCow<'a>(Cow<'a, str>);
+struct EncodableCow<'a, T: ?Sized + ToOwned>(Cow<'a, T>);
 
-impl<'a> From<Cow<'a, str>> for EncodableCow<'a> {
-    fn from(cow: Cow<'a, str>) -> Self {
+impl<'a, T: ?Sized + ToOwned> From<Cow<'a, T>> for EncodableCow<'a, T> {
+    fn from(cow: Cow<'a, T>) -> Self {
         EncodableCow(cow)
     }
 }
 
-impl<'a> Encoder for EncodableCow<'a> {
+impl<'a, T: ?Sized + ToOwned + Encoder> Encoder for EncodableCow<'a, T> {
     fn encode<'b>(&self, env: Env<'b>) -> Term<'b> {
         self.0.encode(env)
     }
