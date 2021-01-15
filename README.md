@@ -19,3 +19,4 @@ end
 - [ ] More Rust regex API coverage
 - [ ] Does it make sense to try to match Elixir API?
 - [ ] Hex?
+- [x] Examples

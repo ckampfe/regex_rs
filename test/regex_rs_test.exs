@@ -22,10 +22,11 @@ defmodule RegexRsTest do
     assert regex_str == RegexRs.source(rust_multi_named_capture_regex)
   end
 
-  test "find_iter/2" do
+  test "scan/2" do
     {:ok, re} = RegexRs.compile("\\d+")
-    assert ["12345"] = RegexRs.find_iter(re, "12345")
-    assert [] = RegexRs.find_iter(re, "abcde")
+    assert ["12345"] = RegexRs.scan(re, "12345")
+    assert ["12345", "66666"] = RegexRs.scan(re, "12345 66666")
+    assert [] = RegexRs.scan(re, "abcde")
   end
 
   test "is_match/2" do
@@ -73,7 +74,7 @@ defmodule RegexRsTest do
     assert "Bruce Springsteen" == RegexRs.replace(re, "Springsteen, Bruce", "$first $last")
     assert "Bruce_Springsteen" == RegexRs.replace(re, "Springsteen, Bruce", "${first}_$last")
     assert "Bruce Springsteen" == RegexRs.replace(re, "Springsteen, Bruce", "$2 $1")
-    assert "" == RegexRs.replace(re, "", "$first $last")
+    assert "234234902834" == RegexRs.replace(re, "234234902834", "$first $last")
     assert "" == RegexRs.replace(re, "", "$2 $1")
     {:ok, rust_replacement_regex} = RegexRs.compile("(?P<letters>[a-z]+)\\s+(?P<digits>\\d+)")
     assert "123 abc" == RegexRs.replace(rust_replacement_regex, "abc 123", "$2 $1")

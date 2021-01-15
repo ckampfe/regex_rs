@@ -26,7 +26,7 @@ Benchee.run(
       Regex.scan(elixir_regex, i)
     end,
     "rust scan" => fn i ->
-      RegexRs.find_iter(rust_regex, i)
+      RegexRs.scan(rust_regex, i)
     end,
     "rust match" => fn i ->
       RegexRs.is_match(rust_regex, i)

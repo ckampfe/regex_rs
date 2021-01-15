@@ -23,12 +23,12 @@ rustler::init!(
     "Elixir.RegexRs",
     [
         compile,
-        find_iter,
         is_match,
         named_captures,
         replace,
         replace_all,
         run,
+        scan,
         source,
     ],
     load = on_load
@@ -59,7 +59,7 @@ fn run(re: CompiledRegex, s: &str) -> Vec<&str> {
 }
 
 #[rustler::nif]
-fn find_iter(re: CompiledRegex, s: &str) -> Vec<&str> {
+fn scan(re: CompiledRegex, s: &str) -> Vec<&str> {
     re.regex.find_iter(s).map(|m| m.as_str()).collect()
 }
 
