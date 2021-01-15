@@ -1,7 +1,6 @@
 use rustler::resource::ResourceArc;
 use rustler::{resource, Encoder, Env, Error, Term};
 use std::borrow::Cow;
-use std::collections::HashMap;
 
 type CompiledRegex = ResourceArc<RegexResource>;
 
@@ -70,14 +69,14 @@ fn is_match(re: CompiledRegex, s: &str) -> bool {
 }
 
 #[rustler::nif]
-fn named_captures(re: CompiledRegex, s: &str) -> EncodableHashMap<String, String> {
+fn named_captures(re: CompiledRegex, s: &str) -> EncodablePairs<String, String> {
     let names = re.regex.capture_names();
-    let mut m = HashMap::with_capacity(names.len());
+    let mut m = Vec::with_capacity(names.len());
 
     if let Some(captures) = re.regex.captures(s) {
         for name in names {
             if let Some(name) = name {
-                m.insert(name.to_owned(), captures[name].to_owned());
+                m.push((name.to_owned(), captures[name].to_owned()))
             }
         }
     }
@@ -100,29 +99,20 @@ fn replace_all<'a>(re: CompiledRegex, s: &'a str, replacement: &str) -> Encodabl
     re.regex.replace_all(s, replacement).into()
 }
 
-struct EncodableHashMap<K, V>(HashMap<K, V>);
+struct EncodablePairs<K, V>(Vec<(K, V)>);
 
-impl<K, V> From<HashMap<K, V>> for EncodableHashMap<K, V> {
-    fn from(hm: HashMap<K, V>) -> Self {
-        EncodableHashMap(hm)
+impl<T: Into<Vec<(K, V)>>, K, V> From<T> for EncodablePairs<K, V> {
+    fn from(pairs: T) -> Self {
+        EncodablePairs(pairs.into())
     }
 }
 
-impl<K, V> Encoder for EncodableHashMap<K, V>
+impl<K, V> Encoder for EncodablePairs<K, V>
 where
     K: Encoder,
     V: Encoder,
 {
     fn encode<'b>(&self, env: Env<'b>) -> Term<'b> {
-        // TODO: this an alternate implementation that works.
-        // TODO: it may be worth benchmarking
-        //
-        // let keys: Vec<Term<'b>> = self.0.keys().map(|k| k.encode(env)).collect();
-        // let values: Vec<Term<'b>> = self.0.values().map(|v| v.encode(env)).collect();
-        // let keys = keys.as_slice();
-        // let values = values.as_slice();
-        // rustler::Term::map_from_arrays(env, keys, values).unwrap()
-
         let mut m = Term::map_new(env);
 
         for (k, v) in self.0.iter() {
