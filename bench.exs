@@ -22,30 +22,30 @@ elixir_replacement_regex = Regex.compile!("(?P<letters>[a-z]+)\\s+(?P<digits>\\d
 
 Benchee.run(
   %{
-    # "elixir scan" => fn i ->
-    #   Regex.scan(elixir_regex, i)
-    # end,
-    # "rust scan" => fn i ->
-    #   RegexRs.find_iter(rust_regex, i)
-    # end,
-    # "rust match" => fn i ->
-    #   RegexRs.is_match(rust_regex, i)
-    # end,
-    # "elixir match" => fn i ->
-    #   Regex.match?(elixir_regex, i)
-    # end,
-    # "rust named captures" => fn i ->
-    #   RegexRs.named_captures(rust_named_capture_regex, i)
-    # end,
-    # "elixir named captures" => fn i ->
-    #   Regex.named_captures(elixir_named_capture_regex, i)
-    # end,
-    # "rust run" => fn i ->
-    #   RegexRs.run(rust_run_regex, i)
-    # end,
-    # "elixir run" => fn i ->
-    #   Regex.run(elixir_run_regex, i)
-    # end,
+    "elixir scan" => fn i ->
+      Regex.scan(elixir_regex, i)
+    end,
+    "rust scan" => fn i ->
+      RegexRs.find_iter(rust_regex, i)
+    end,
+    "rust match" => fn i ->
+      RegexRs.is_match(rust_regex, i)
+    end,
+    "elixir match" => fn i ->
+      Regex.match?(elixir_regex, i)
+    end,
+    "rust named captures" => fn i ->
+      RegexRs.named_captures(rust_named_capture_regex, i)
+    end,
+    "elixir named captures" => fn i ->
+      Regex.named_captures(elixir_named_capture_regex, i)
+    end,
+    "rust run" => fn i ->
+      RegexRs.run(rust_run_regex, i)
+    end,
+    "elixir run" => fn i ->
+      Regex.run(elixir_run_regex, i)
+    end,
     "rust replace numbered" => fn i ->
       RegexRs.replace(rust_replacement_regex, i, "$2 $1")
     end,
