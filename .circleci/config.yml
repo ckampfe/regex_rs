@@ -18,7 +18,7 @@ jobs:
       - run: mix local.hex --force
       - run: mix local.rebar --force
       - run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-      - run: source $HOME/.cargo/env
+      - run: echo "PATH=$PATH:$HOME/.cargo/env" >> ~/.bash_profile
       - run:
           name: Version information
           command: rustc --version; cargo --version; rustup --version
