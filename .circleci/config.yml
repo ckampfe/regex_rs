@@ -23,14 +23,6 @@ jobs:
           name: Version information
           command: rustc --version; cargo --version; rustup --version
 
-      - run:
-          name: Calculate dependencies
-          command: cd native/regexrust && cargo generate-lockfile
-
-      - restore_cache:
-          keys:
-            - v1-cargo-cache-{{ arch }}-{{ checksum "native/regexrust/Cargo.lock" }}
-
       - restore_cache:
           # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
           keys:
@@ -52,14 +44,6 @@ jobs:
       - save_cache:
           key: v1-build-cache-{{ .Branch }}
           paths: "_build"
-
-      - save_cache:
-          paths:
-            - /usr/local/cargo/registry
-            - native/regexrust/target/debug/.fingerprint
-            - native/regexrust/target/debug/build
-            - native/regexrust/target/debug/deps
-          key: v1-cargo-cache-{{ arch }}-{{ checksum "native/regexrust/Cargo.lock" }}
 
       - run: mix test
 
