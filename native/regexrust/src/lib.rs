@@ -22,20 +22,25 @@ fn on_load(env: Env, _info: Term) -> bool {
 rustler::init!(
     "Elixir.RegexRs",
     [
-        compile,
+        as_str,
+        capture_names,
+        captures,
+        captures_named,
+        captures_iter,
+        captures_iter_named,
+        captures_len,
+        find,
+        find_iter,
         is_match,
-        named_captures,
+        new,
         replace,
         replace_all,
-        run,
-        scan,
-        source,
     ],
     load = on_load
 );
 
-#[rustler::nif(name = "compile_internal")]
-fn compile(s: &str) -> Result<(rustler::Atom, CompiledRegex), Error> {
+#[rustler::nif(name = "new_internal")]
+fn new(s: &str) -> Result<(rustler::Atom, CompiledRegex), Error> {
     let regex = regex::Regex::new(s);
     match regex {
         Ok(regex) => {
@@ -47,19 +52,93 @@ fn compile(s: &str) -> Result<(rustler::Atom, CompiledRegex), Error> {
 }
 
 #[rustler::nif]
-fn run(re: CompiledRegex, s: &str) -> Vec<&str> {
+fn captures(re: CompiledRegex, s: &str) -> Option<Vec<&str>> {
     if let Some(captures) = re.regex.captures(s) {
-        captures
-            .iter()
-            .flat_map(|m| m.map(|mm| mm.as_str()))
-            .collect()
+        Some(
+            captures
+                .iter()
+                .flat_map(|m| m.map(|mm| mm.as_str()))
+                .collect(),
+        )
     } else {
-        vec![]
+        None
     }
 }
 
 #[rustler::nif]
-fn scan(re: CompiledRegex, s: &str) -> Vec<&str> {
+fn capture_names(re: CompiledRegex) -> Vec<String> {
+    re.regex
+        .capture_names()
+        .map(|c| match c {
+            Some(named_capture) => named_capture.to_owned(),
+            None => "unnamed_capture".to_string(),
+        })
+        .collect()
+}
+
+#[rustler::nif]
+fn captures_named(re: CompiledRegex, s: &str) -> Option<EncodablePairs<String, String>> {
+    let names = re.regex.capture_names();
+
+    if let Some(c) = re.regex.captures(s) {
+        let mut m = Vec::with_capacity(names.len());
+
+        for name in names {
+            if let Some(name) = name {
+                m.push((name.to_owned(), c[name].to_owned()))
+            }
+        }
+        Some(m.into())
+    } else {
+        None
+    }
+}
+
+#[rustler::nif]
+fn captures_iter(re: CompiledRegex, s: &str) -> Vec<Vec<&str>> {
+    re.regex
+        .captures_iter(s)
+        .map(|capture| {
+            capture
+                .iter()
+                .flat_map(|c| c.map(|cc| cc.as_str()))
+                .collect()
+        })
+        .collect()
+}
+
+#[rustler::nif]
+fn captures_iter_named(re: CompiledRegex, s: &str) -> Vec<EncodablePairs<String, String>> {
+    let names = re.regex.capture_names();
+
+    re.regex
+        .captures_iter(s)
+        .map(|capture| {
+            let mut m = Vec::with_capacity(names.len());
+
+            for name in names.clone() {
+                if let Some(name) = name {
+                    m.push((name.to_owned(), capture[name].to_owned()))
+                }
+            }
+
+            m.into()
+        })
+        .collect()
+}
+
+#[rustler::nif]
+fn captures_len(re: CompiledRegex) -> usize {
+    re.regex.captures_len()
+}
+
+#[rustler::nif]
+fn find(re: CompiledRegex, s: &str) -> Option<&str> {
+    re.regex.find(s).map(|m| m.as_str())
+}
+
+#[rustler::nif]
+fn find_iter(re: CompiledRegex, s: &str) -> Vec<&str> {
     re.regex.find_iter(s).map(|m| m.as_str()).collect()
 }
 
@@ -69,23 +148,7 @@ fn is_match(re: CompiledRegex, s: &str) -> bool {
 }
 
 #[rustler::nif]
-fn named_captures(re: CompiledRegex, s: &str) -> EncodablePairs<String, String> {
-    let names = re.regex.capture_names();
-    let mut m = Vec::with_capacity(names.len());
-
-    if let Some(captures) = re.regex.captures(s) {
-        for name in names {
-            if let Some(name) = name {
-                m.push((name.to_owned(), captures[name].to_owned()))
-            }
-        }
-    }
-
-    m.into()
-}
-
-#[rustler::nif]
-fn source(re: CompiledRegex) -> String {
+fn as_str(re: CompiledRegex) -> String {
     re.regex.as_str().to_owned()
 }
 
