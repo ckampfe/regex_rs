@@ -1,5 +1,7 @@
 # RegexRs
 
+[![CircleCI](https://circleci.com/gh/ckampfe/regex_rs.svg?style=svg)](https://circleci.com/gh/ckampfe/regex_rs)
+
 Rust's [regex](https://crates.io/crates/regex) library as an Elixir NIF.
 
 This library is mostly an experiment.
