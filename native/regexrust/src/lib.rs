@@ -1,5 +1,5 @@
 use rustler::resource::ResourceArc;
-use rustler::{resource, Encoder, Env, Error, Term};
+use rustler::{Encoder, Env, Error, Term};
 use std::borrow::Cow;
 
 type CompiledRegex = ResourceArc<RegexResource>;
@@ -15,7 +15,7 @@ mod atoms {
 }
 
 fn on_load(env: Env, _info: Term) -> bool {
-    resource!(RegexResource, env);
+    rustler::resource!(RegexResource, env);
     true
 }
 
@@ -53,16 +53,12 @@ fn new(s: &str) -> Result<(rustler::Atom, CompiledRegex), Error> {
 
 #[rustler::nif]
 fn captures(re: CompiledRegex, s: &str) -> Option<Vec<&str>> {
-    if let Some(captures) = re.regex.captures(s) {
-        Some(
-            captures
-                .iter()
-                .flat_map(|m| m.map(|mm| mm.as_str()))
-                .collect(),
-        )
-    } else {
-        None
-    }
+    re.regex.captures(s).map(|captures| {
+        captures
+            .iter()
+            .flat_map(|m| m.map(|mm| mm.as_str()))
+            .collect()
+    })
 }
 
 #[rustler::nif]
@@ -80,18 +76,13 @@ fn capture_names(re: CompiledRegex) -> Vec<String> {
 fn captures_named(re: CompiledRegex, s: &str) -> Option<EncodablePairs<String, String>> {
     let names = re.regex.capture_names();
 
-    if let Some(c) = re.regex.captures(s) {
-        let mut m = Vec::with_capacity(names.len());
-
-        for name in names {
-            if let Some(name) = name {
-                m.push((name.to_owned(), c[name].to_owned()))
-            }
-        }
-        Some(m.into())
-    } else {
-        None
-    }
+    re.regex.captures(s).map(|c| {
+        names
+            .flatten()
+            .map(|name| (name.to_owned(), c[name].to_owned()))
+            .collect::<Vec<(String, String)>>()
+            .into()
+    })
 }
 
 #[rustler::nif]
@@ -114,15 +105,12 @@ fn captures_iter_named(re: CompiledRegex, s: &str) -> Vec<EncodablePairs<String,
     re.regex
         .captures_iter(s)
         .map(|capture| {
-            let mut m = Vec::with_capacity(names.len());
-
-            for name in names.clone() {
-                if let Some(name) = name {
-                    m.push((name.to_owned(), capture[name].to_owned()))
-                }
-            }
-
-            m.into()
+            names
+                .clone()
+                .flatten()
+                .map(|name| (name.to_owned(), capture[name].to_owned()))
+                .collect::<Vec<(String, String)>>()
+                .into()
         })
         .collect()
 }
