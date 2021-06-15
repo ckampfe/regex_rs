@@ -27,7 +27,9 @@ defmodule RegexRs do
   - [ ] splitn
   """
 
-  use Rustler, otp_app: :regex_rs, crate: :regexrust
+  use Rustler,
+    otp_app: :regex_rs,
+    crate: :regexrust
 
   @doc ~S"""
   Compiles the regular expression.
