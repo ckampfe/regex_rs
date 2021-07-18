@@ -1,6 +1,7 @@
 use rustler::resource::ResourceArc;
 use rustler::{Encoder, Env, Error, Term};
 use std::borrow::Cow;
+use std::collections::HashMap;
 
 type CompiledRegex = ResourceArc<RegexResource>;
 
@@ -73,15 +74,14 @@ fn capture_names(re: CompiledRegex) -> Vec<String> {
 }
 
 #[rustler::nif]
-fn captures_named(re: CompiledRegex, s: &str) -> Option<EncodablePairs<String, String>> {
+fn captures_named(re: CompiledRegex, s: &str) -> Option<HashMap<String, String>> {
     let names = re.regex.capture_names();
 
     re.regex.captures(s).map(|c| {
         names
             .flatten()
             .map(|name| (name.to_owned(), c[name].to_owned()))
-            .collect::<Vec<(String, String)>>()
-            .into()
+            .collect::<HashMap<String, String>>()
     })
 }
 
@@ -99,7 +99,7 @@ fn captures_iter(re: CompiledRegex, s: &str) -> Vec<Vec<&str>> {
 }
 
 #[rustler::nif]
-fn captures_iter_named(re: CompiledRegex, s: &str) -> Vec<EncodablePairs<String, String>> {
+fn captures_iter_named(re: CompiledRegex, s: &str) -> Vec<HashMap<String, String>> {
     let names = re.regex.capture_names();
 
     re.regex
@@ -109,8 +109,7 @@ fn captures_iter_named(re: CompiledRegex, s: &str) -> Vec<EncodablePairs<String,
                 .clone()
                 .flatten()
                 .map(|name| (name.to_owned(), capture[name].to_owned()))
-                .collect::<Vec<(String, String)>>()
-                .into()
+                .collect::<HashMap<String, String>>()
         })
         .collect()
 }
@@ -148,30 +147,6 @@ fn replace<'a>(re: CompiledRegex, s: &'a str, replacement: &str) -> EncodableCow
 #[rustler::nif]
 fn replace_all<'a>(re: CompiledRegex, s: &'a str, replacement: &str) -> EncodableCow<'a, str> {
     re.regex.replace_all(s, replacement).into()
-}
-
-struct EncodablePairs<K, V>(Vec<(K, V)>);
-
-impl<T: Into<Vec<(K, V)>>, K, V> From<T> for EncodablePairs<K, V> {
-    fn from(pairs: T) -> Self {
-        EncodablePairs(pairs.into())
-    }
-}
-
-impl<K, V> Encoder for EncodablePairs<K, V>
-where
-    K: Encoder,
-    V: Encoder,
-{
-    fn encode<'b>(&self, env: Env<'b>) -> Term<'b> {
-        let mut m = Term::map_new(env);
-
-        for (k, v) in self.0.iter() {
-            m = m.map_put(k.encode(env), v.encode(env)).unwrap()
-        }
-
-        m
-    }
 }
 
 struct EncodableCow<'a, T: ?Sized + ToOwned>(Cow<'a, T>);

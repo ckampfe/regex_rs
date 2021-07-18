@@ -22,7 +22,7 @@ defmodule RegexRs.MixProject do
   defp deps do
     [
       {:benchee, "~> 1.0", only: [:dev, :bench]},
-      {:rustler, "~> 0.22.0-rc.1"}
+      {:rustler, "~> 0.22.0"}
     ]
   end
 end
