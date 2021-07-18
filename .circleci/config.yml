@@ -3,7 +3,7 @@ jobs:
   build:
     parallelism: 1
     docker:
-      - image: circleci/elixir:1.11.3
+      - image: circleci/elixir:1.12.2
         # auth:
         #   username: mydockerhub-user
         #   password: $DOCKERHUB_PASSWORD # context / project UI env-var reference
