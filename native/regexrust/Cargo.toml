@@ -2,7 +2,7 @@
 name = "regexrust"
 version = "0.1.0"
 authors = []
-edition = "2018"
+edition = "2021"
 
 [lib]
 name = "regexrust"
@@ -11,7 +11,7 @@ crate-type = ["dylib"]
 
 [dependencies]
 regex = "1"
-rustler = "0.22.0"
+rustler = "0.22"
 
 [profile.release]
 codegen-units = 1
